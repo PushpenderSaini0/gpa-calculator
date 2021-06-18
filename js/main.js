@@ -20,6 +20,8 @@ const {
 
 const { useState, useEffect } = React;
 
+const GRADES = ['F','F','F','F','D','C','C+','B','B+','A','A+'];
+
 const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
@@ -53,7 +55,7 @@ const CourceTableRow = (prop) => {
     <TableRow>
       <TableCell align="left">{row.name}</TableCell>
       <TableCell align="center">{row.credit}</TableCell>
-      <TableCell align="center">{row.grade}</TableCell>
+      <TableCell align="center">{GRADES[row.grade]}</TableCell>
       <TableCell align="right">
         {prop.row.credit ? <IconButton
           aria-label="delete"
