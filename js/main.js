@@ -18,7 +18,7 @@ const {
   IconButton
 } = MaterialUI;
 
-const { useState } = React;
+const { useState, useEffect } = React;
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -195,7 +195,9 @@ const AddDataToTable = (prop) => {
 const App = () => {
   const [data, setData] = useState([]);
   const [GPA, setGPA] = useState("0.0");
-
+  useEffect(() => {
+    setData(JSON.parse(localStorage.getItem("userCourceData") || "[]"));
+  }, []);
   const removeCource = (courceId) => {
     setData((prev) => {
       const res = prev.filter(obj => {
@@ -203,6 +205,7 @@ const App = () => {
           return obj;
         }
       });
+      localStorage.setItem("userCourceData", JSON.stringify(res));
       return res;
     });
   }
@@ -221,11 +224,13 @@ const App = () => {
     setData((prev) => {
       prev.push(cource);
       calcGPA(prev);
+      localStorage.setItem("userCourceData", JSON.stringify(prev));
       return [...prev];
     });
   }
   const resetTable = () => {
     setData([]);
+    localStorage.setItem("userCourceData", JSON.stringify([]));
     setGPA("0.0");
   }
   return (
