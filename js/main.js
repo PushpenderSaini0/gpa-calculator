@@ -25,7 +25,7 @@ const GRADES = ['F', 'F', 'F', 'F', 'D', 'C', 'C+', 'B', 'B+', 'A', 'A+'];
 const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
-    minWidth: 120,
+    minWidth: 100,
   },
   selectEmpty: {
     marginTop: theme.spacing(2),
@@ -47,15 +47,40 @@ const ResultBox = (prop) => {
 }
 
 const CourceTableRow = (prop) => {
+  const [grade, setGrade] = useState(prop.row.grade);
   const row = prop.row;
   const clickHandler = () => {
     prop.removeCource(prop.row.id);
+  }
+  const changeHandler = (e) => {
+    setGrade(e.target.value);
+    prop.gradeChangeHandler(e.target.value, prop.row.id);
   }
   return (
     <TableRow>
       <TableCell align="left">{row.name}</TableCell>
       <TableCell align="center">{row.credit}</TableCell>
-      <TableCell align="center">{GRADES[row.grade]}</TableCell>
+      <TableCell align="center">
+        {
+          prop.row.credit ? <FormControl>
+            <Select
+              labelId="cource-grade"
+              id="cource-grade-select"
+              value={grade}
+              onChange={changeHandler}
+            >
+              <MenuItem value={10}>A+</MenuItem>
+              <MenuItem value={9}>A</MenuItem>
+              <MenuItem value={8}>B+</MenuItem>
+              <MenuItem value={7}>B</MenuItem>
+              <MenuItem value={6}>C+</MenuItem>
+              <MenuItem value={5}>C</MenuItem>
+              <MenuItem value={4}>D</MenuItem>
+              <MenuItem value={0}>F</MenuItem>
+            </Select>
+          </FormControl> : " "
+        }
+      </TableCell>
       <TableCell align="right">
         {prop.row.credit ? <IconButton
           aria-label="delete"
@@ -86,7 +111,12 @@ const CourceTable = (prop) => {
             {
               data.length ?
                 data.map(row => (
-                  <CourceTableRow removeCource={prop.removeCource} key={row.id} row={row} />
+                  <CourceTableRow
+                    removeCource={prop.removeCource}
+                    gradeChangeHandler={prop.gradeChangeHandler}
+                    key={row.id}
+                    row={row}
+                  />
                 ))
                 : <CourceTableRow row={{ name: "Add Some Cource" }} />
             }
@@ -222,11 +252,26 @@ const App = () => {
       let totalCredit = 0;
       let ggpa = 0;
       courceData.forEach(cource => {
-        ggpa += (cource.grade * cource.credit);
-        totalCredit += cource.credit;
+        if (cource.grade >= 4) {
+          ggpa += (cource.grade * cource.credit);
+          totalCredit += cource.credit;
+        }
       });
       setGPA((ggpa / totalCredit).toFixed(2));
     }
+  }
+
+  const gradeChangeHandler = (grade, id) => {
+    const index = data.findIndex(x => x.id == id);
+    const preObj = data[index];
+    data[index] = {
+      id: preObj.id,
+      name: preObj.name,
+      credit: preObj.credit,
+      grade: grade
+    };
+    localStorage.setItem("userCourceData", JSON.stringify(data));
+    calcGPA(data);
   }
 
   const addData = (cource) => {
@@ -252,7 +297,10 @@ const App = () => {
           GPA Calculator
         </Typography>
       </div>
-      <CourceTable data={data} removeCource={removeCource} />
+      <CourceTable
+        data={data}
+        gradeChangeHandler={gradeChangeHandler}
+        removeCource={removeCource} />
       <AddDataToTable
         addDataHandler={addData}
         resetTableHandler={resetTable}
