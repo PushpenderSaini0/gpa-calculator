@@ -20,7 +20,7 @@ const {
 
 const { useState, useEffect } = React;
 
-const GRADES = ['F','F','F','F','D','C','C+','B','B+','A','A+'];
+const GRADES = ['F', 'F', 'F', 'F', 'D', 'C', 'C+', 'B', 'B+', 'A', 'A+'];
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -198,7 +198,11 @@ const App = () => {
   const [data, setData] = useState([]);
   const [GPA, setGPA] = useState("0.0");
   useEffect(() => {
-    setData(JSON.parse(localStorage.getItem("userCourceData") || "[]"));
+    setData(() => {
+      const data = JSON.parse(localStorage.getItem("userCourceData") || "[]")
+      calcGPA(data);
+      return data;
+    });
   }, []);
   const removeCource = (courceId) => {
     setData((prev) => {
@@ -207,19 +211,22 @@ const App = () => {
           return obj;
         }
       });
+      calcGPA(res);
       localStorage.setItem("userCourceData", JSON.stringify(res));
       return res;
     });
   }
 
   const calcGPA = (courceData) => {
-    let totalCredit = 0;
-    let ggpa = 0;
-    courceData.forEach(cource => {
-      ggpa += (cource.grade * cource.credit);
-      totalCredit = + cource.credit;
-    });
-    setGPA((ggpa / totalCredit).toFixed(2));
+    if (courceData.length != 0) {
+      let totalCredit = 0;
+      let ggpa = 0;
+      courceData.forEach(cource => {
+        ggpa += (cource.grade * cource.credit);
+        totalCredit += cource.credit;
+      });
+      setGPA((ggpa / totalCredit).toFixed(2));
+    }
   }
 
   const addData = (cource) => {
