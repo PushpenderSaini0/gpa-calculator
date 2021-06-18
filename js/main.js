@@ -14,7 +14,8 @@ const {
   MenuItem,
   makeStyles,
   TextField,
-  Button
+  Button,
+  IconButton
 } = MaterialUI;
 
 const { useState } = React;
@@ -34,8 +35,8 @@ const ResultBox = (prop) => {
   return (
     <div style={{ marginTop: 25 }}>
       <Typography
-        variant="h3"
-        component="h2"
+        variant="h4"
+        component="h4"
         align="center">
         Your GPA is : {prop.gpa}
       </Typography>
@@ -45,12 +46,23 @@ const ResultBox = (prop) => {
 
 const CourceTableRow = (prop) => {
   const row = prop.row;
+  const clickHandler = () => {
+    prop.removeCource(prop.row.id);
+  }
   return (
     <TableRow>
       <TableCell align="left">{row.name}</TableCell>
       <TableCell align="center">{row.credit}</TableCell>
       <TableCell align="center">{row.grade}</TableCell>
-    </TableRow>
+      <TableCell align="right">
+        {prop.row.credit ? <IconButton
+          aria-label="delete"
+          onClick={clickHandler}
+        >
+          <span className="material-icons">delete</span>
+        </IconButton> : " "}
+      </TableCell>
+    </TableRow >
   );
 }
 
@@ -65,13 +77,14 @@ const CourceTable = (prop) => {
               <TableCell align="left">Cource Name</TableCell>
               <TableCell align="center">Credit</TableCell>
               <TableCell align="center">Grade</TableCell>
+              <TableCell align="right"></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {
               data.length ?
                 data.map(row => (
-                  <CourceTableRow key={row.name} row={row} />
+                  <CourceTableRow removeCource={prop.removeCource} key={row.id} row={row} />
                 ))
                 : <CourceTableRow row={{ name: "Add Some Cource" }} />
             }
@@ -86,13 +99,16 @@ const CourceTable = (prop) => {
 const AddDataToTable = (prop) => {
   const classes = useStyles();
   const [name, setName] = useState("name");
-  const [credit, setCredit] = useState("4");
-  const [grade, setGrade] = useState("10");
-
+  const [credit, setCredit] = useState("0");
+  const [grade, setGrade] = useState("0");
+  const id = name + new Date().getTime();
   const addDataHandler = () => {
     prop.addDataHandler({
-      name, credit, grade
-    })
+      id, name, credit, grade
+    });
+    setName("");
+    setCredit("0");
+    setGrade("0");
   }
   const resetTableHandler = prop.resetTableHandler;
 
@@ -124,7 +140,8 @@ const AddDataToTable = (prop) => {
           value={credit}
           onChange={creditHandler}
         >
-          <MenuItem value={10}>1.0</MenuItem>
+          <MenuItem value={0}>Select</MenuItem>
+          <MenuItem value={1}>1.0</MenuItem>
           <MenuItem value={1.5}>1.5</MenuItem>
           <MenuItem value={2}>2.0</MenuItem>
           <MenuItem value={2.5}>2.5</MenuItem>
@@ -144,6 +161,7 @@ const AddDataToTable = (prop) => {
           value={grade}
           onChange={gradeHandler}
         >
+          <MenuItem value={0}>Select</MenuItem>
           <MenuItem value={10}>A+</MenuItem>
           <MenuItem value={9}>A</MenuItem>
           <MenuItem value={8}>B+</MenuItem>
@@ -178,14 +196,25 @@ const App = () => {
   const [data, setData] = useState([]);
   const [GPA, setGPA] = useState("0.0");
 
+  const removeCource = (courceId) => {
+    setData((prev) => {
+      const res = prev.filter(obj => {
+        if (obj.id != courceId) {
+          return obj;
+        }
+      });
+      return res;
+    });
+  }
+
   const calcGPA = (courceData) => {
     let totalCredit = 0;
     let ggpa = 0;
     courceData.forEach(cource => {
       ggpa += (cource.grade * cource.credit);
-      totalCredit =+ cource.credit;
+      totalCredit = + cource.credit;
     });
-    setGPA((ggpa/totalCredit).toFixed(2));
+    setGPA((ggpa / totalCredit).toFixed(2));
   }
 
   const addData = (cource) => {
@@ -199,7 +228,6 @@ const App = () => {
     setData([]);
     setGPA("0.0");
   }
-  console.log(data);
   return (
     <Container maxWidth="sm">
       <div style={{ marginTop: 50 }}>
@@ -210,7 +238,7 @@ const App = () => {
           GPA Calculator
         </Typography>
       </div>
-      <CourceTable data={data} />
+      <CourceTable data={data} removeCource={removeCource} />
       <AddDataToTable
         addDataHandler={addData}
         resetTableHandler={resetTable}
