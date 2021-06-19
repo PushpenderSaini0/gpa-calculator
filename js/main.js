@@ -283,9 +283,11 @@ const App = () => {
     });
   }
   const resetTable = () => {
-    setData([]);
-    localStorage.setItem("userCourceData", JSON.stringify([]));
-    setGPA("0.0");
+    if (confirm("Are you sure you want to reset the table ?")) {
+      setData([]);
+      localStorage.setItem("userCourceData", JSON.stringify([]));
+      setGPA("0.0");
+    }
   }
   return (
     <Container maxWidth="sm">
